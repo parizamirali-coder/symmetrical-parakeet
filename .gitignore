@@ -1,0 +1,11 @@
+# Generated local QR card images and print sheet (do not upload these)
+QR-*.png
+QR-PRINT-SHEET.html
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Windows/macOS noise
+Thumbs.db
+.DS_Store

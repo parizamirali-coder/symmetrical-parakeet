@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <meta name="description" content="View published student assessment results">
+  <title>Your results · Scoreboard</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./student.js" defer></script>
+</head>
+<body>
+  <div class="site-shell student-shell">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Scoreboard home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3.5 8.2 12 4l8.5 4.2L12 12.4 3.5 8.2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6.7 10v5.1c2.9 2.7 7.7 2.7 10.6 0V10M20.5 8.4v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="brand-copy"><strong>Scoreboard</strong><small>Student results</small></span>
+      </a>
+      <div class="live-status" id="connection-status" data-state="loading" role="status" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span id="connection-label">Connecting</span></div>
+    </header>
+
+    <main class="student-main">
+      <div class="page-heading">
+        <div><span class="eyebrow">YOUR PERSONAL SCORE PAGE</span><h1>Your results</h1><p>All your published assessment results in one place.</p></div>
+        <button class="icon-button" id="refresh-button" type="button" aria-label="Refresh scores now" title="Refresh scores now">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16.4 8A6.5 6.5 0 0 0 5.1 5.5L3.5 7.2M3.5 7.2V3.8M3.5 7.2h3.4M3.6 12A6.5 6.5 0 0 0 14.9 14.5l1.6-1.7m0 0v3.4m0-3.4h-3.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="notice-banner" id="connection-notice" hidden role="status"></div>
+
+      <section class="profile-card" id="profile-card" hidden aria-labelledby="student-name">
+        <div class="profile-heading">
+          <div class="avatar" aria-hidden="true" id="student-avatar">S</div>
+          <div class="profile-identity"><span class="eyebrow">WELCOME BACK</span><h2 id="student-name">Student</h2><p id="student-code"></p></div>
+          <span class="profile-pill"><span class="status-dot" aria-hidden="true"></span> Published</span>
+        </div>
+        <div class="metric-grid">
+          <article class="metric-card"><div class="metric-label">Average percentage</div><div class="metric-value" id="average-score">—</div><div class="metric-help">Across your published assessments</div></article>
+          <article class="metric-card"><div class="metric-label">Assessments</div><div class="metric-value" id="assessment-count">—</div><div class="metric-help">Individual results published</div></article>
+        </div>
+      </section>
+
+      <section class="results-section" id="results-section" hidden aria-labelledby="results-title">
+        <div class="section-heading"><div><span class="eyebrow">SCORE HISTORY</span><h2 id="results-title">Your assessments</h2></div><span class="result-count" id="result-count">0 results</span></div>
+        <div class="results-list" id="results-list" aria-live="polite"></div>
+      </section>
+
+      <section class="state-card" id="state-card" aria-live="polite">
+        <div class="state-icon" id="state-icon" aria-hidden="true"><span class="loading-spinner"></span></div>
+        <h2 id="state-title">Loading your results</h2>
+        <p id="state-message">Connecting to the published score data.</p>
+      </section>
+
+      <div class="page-meta" id="page-meta" hidden><span id="last-updated">Waiting for first update</span><span>Background refresh every 30 seconds</span></div>
+    </main>
+
+    <footer class="site-footer"><span>Scoreboard</span><span>Questions about a result? Contact your school.</span></footer>
+  </div>
+</body>
+</html>

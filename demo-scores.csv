@@ -1,0 +1,6 @@
+student_id,subject,assessment,date,score,max_score,feedback
+DEMO-001,Mathematics,Quiz 1,2026-10-12,18,20,Good work on fractions.
+DEMO-001,Science,Lab report,2026-10-21,42,50,Clear observations and conclusions.
+DEMO-001,English,Reading task,2026-10-29,16,20,Keep developing your evidence.
+DEMO-002,Mathematics,Quiz 1,2026-10-12,15,20,Review the final two questions.
+DEMO-002,Science,Lab report,2026-10-21,46,50,Excellent presentation.

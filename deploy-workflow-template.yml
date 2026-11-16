@@ -1,0 +1,66 @@
+name: Validate scores and publish website
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate score data
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate the student roster and scores
+        run: python3 validate_scores.py scores.csv students.csv
+
+      - name: Check required website files
+        run: |
+          test -f index.html
+          test -f student.html
+          test -f styles.css
+          test -f student.js
+          test -f scores.csv
+          test -f students.csv
+
+  deploy:
+    name: Publish GitHub Pages
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Assemble the public website
+        run: |
+          mkdir -p _site
+          cp index.html student.html styles.css student.js scores.csv students.csv _site/
+
+      - name: Upload website artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v4
