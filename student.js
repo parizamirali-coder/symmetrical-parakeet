@@ -272,7 +272,8 @@
         fetchCsv("scores.csv", ["student_id", "subject", "assessment", "score", "max_score"])
       ]);
 
-      const student = students.find((record) => record.student_id === studentId);
+      const normalisedId = studentId.toLocaleLowerCase();
+      const student = students.find((record) => String(record.student_id || "").trim().toLocaleLowerCase() === normalisedId);
       if (!student) {
         ui.profile.hidden = true;
         ui.resultsSection.hidden = true;
@@ -285,7 +286,7 @@
         return;
       }
 
-      const records = allScores.filter((record) => record.student_id === studentId);
+      const records = allScores.filter((record) => String(record.student_id || "").trim().toLocaleLowerCase() === normalisedId);
       const validRecords = records.filter((record) => {
         const score = Number(record.score);
         const max = Number(record.max_score);
