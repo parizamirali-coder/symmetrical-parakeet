@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <meta name="description" content="Local administrator panel for the Student Score Portal">
+  <title>Admin workspace · Scoreboard</title>
+  <link rel="stylesheet" href="./admin.css">
+  <script src="./admin.js" defer></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Scoreboard admin home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3.5 8.2 12 4l8.5 4.2L12 12.4 3.5 8.2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6.7 10v5.1c2.9 2.7 7.7 2.7 10.6 0V10M20.5 8.4v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="brand-copy"><strong>Scoreboard</strong><small>Admin workspace</small></span>
+      </a>
+      <div class="top-actions">
+        <div class="live-status" id="connection-status" data-state="offline" role="status" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span><span id="connection-label">Not connected</span>
+        </div>
+        <button class="settings-button" id="open-settings" type="button" aria-haspopup="dialog">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M8.4 2.8h3.2l.5 1.8 1.4.8 1.8-.5 1.6 2.8-1.3 1.3v1.6l1.3 1.3-1.6 2.8-1.8-.5-1.4.8-.5 1.8H8.4l-.5-1.8-1.4-.8-1.8.5-1.6-2.8 1.3-1.3V9l-1.3-1.3 1.6-2.8 1.8.5 1.4-.8.5-1.8Z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/><circle cx="10" cy="9.8" r="2.4" stroke="currentColor" stroke-width="1.35"/></svg>
+          Settings
+        </button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="page-intro">
+        <div>
+          <span class="eyebrow">ADMINISTRATION</span>
+          <h1>Good work starts<br><span>with clear results.</span></h1>
+          <p>Manage student assessments and publish updates straight to GitHub. No desktop Git client, no command line.</p>
+        </div>
+        <div class="intro-side">
+          <div class="repo-chip"><span class="repo-icon">⌘</span><span><small>CONNECTED REPOSITORY</small><strong id="repo-label">amiraliparizz-coder / symmetrical-parakeet</strong></span></div>
+          <div class="intro-hint"><span class="hint-spark">✦</span> Changes are committed automatically when you save.</div>
+        </div>
+      </section>
+
+      <section class="connect-card" id="connect-card">
+        <div class="connect-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M8.5 15.5 6.7 17.3a3.2 3.2 0 0 1-4.5-4.5l4-4a3.2 3.2 0 0 1 4.5 0M15.5 8.5l1.8-1.8a3.2 3.2 0 0 1 4.5 4.5l-4 4a3.2 3.2 0 0 1-4.5 0M8.5 15.5l7-7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+        <div class="connect-copy"><strong>Connect your GitHub repository</strong><p>Enter a fine-grained GitHub token once. It stays on this Windows browser and can be changed or cleared in Settings.</p></div>
+        <button class="primary-button" id="connect-now" type="button">Configure connection <span>→</span></button>
+      </section>
+
+      <section class="dashboard" id="dashboard" hidden>
+        <div class="dashboard-topline">
+          <div><span class="eyebrow">YOUR CLASS AT A GLANCE</span><h2>Score analytics</h2></div>
+          <div class="updated-label" id="updated-label">Waiting for data</div>
+        </div>
+
+        <div class="analytics-grid">
+          <article class="average-card">
+            <div class="average-copy"><span class="metric-label">CLASS AVERAGE</span><strong id="average-value">—</strong><p>Average percentage across published assessments</p><div class="average-foot"><span class="trend-dot"></span><span id="average-caption">No results yet</span></div></div>
+            <div class="average-ring" id="average-ring" role="img" aria-label="Class average chart" style="--ring-value:0%"><div class="ring-center"><strong id="ring-value">—</strong><span>AVG</span></div></div>
+          </article>
+          <article class="stat-card"><div class="stat-icon violet">♧</div><span class="metric-label">STUDENTS</span><strong class="stat-value" id="student-total">—</strong><span class="stat-note">In your roster</span></article>
+          <article class="stat-card"><div class="stat-icon blue">▤</div><span class="metric-label">ASSESSMENTS</span><strong class="stat-value" id="assessment-total">—</strong><span class="stat-note">Published score entries</span></article>
+          <article class="stat-card best-card"><div class="stat-icon gold">✦</div><span class="metric-label">HIGHEST RESULT</span><strong class="stat-value" id="best-value">—</strong><span class="stat-note" id="best-caption">Awaiting first score</span></article>
+        </div>
+
+        <div class="insights-grid">
+          <article class="panel subject-panel">
+            <div class="panel-heading"><div><span class="eyebrow">PERFORMANCE</span><h3>By subject</h3></div><span class="panel-note">Average %</span></div>
+            <div class="subject-bars" id="subject-bars"><div class="empty-inline">Subject insights will appear once scores are published.</div></div>
+          </article>
+          <article class="panel highlight-panel">
+            <div class="panel-heading"><div><span class="eyebrow">A LITTLE HIGHLIGHT</span><h3>Top performance</h3></div><span class="highlight-star">✦</span></div>
+            <div class="highlight-score" id="highlight-score">—</div>
+            <div class="highlight-subject" id="highlight-subject">No assessment data yet</div>
+            <div class="highlight-student" id="highlight-student">Your strongest result will appear here.</div>
+          </article>
+        </div>
+
+        <div class="workspace-grid">
+          <section class="panel form-panel" aria-labelledby="form-title">
+            <div class="panel-heading form-heading"><div><span class="eyebrow">NEW RESULT</span><h3 id="form-title">Add an assessment score</h3></div><span class="form-step">01 <i>/</i> 01</span></div>
+            <form id="score-form" novalidate>
+              <div class="field student-field">
+                <span>Student</span>
+                <select id="student-select" class="native-select-hidden" tabindex="-1" aria-hidden="true"><option value="">Choose a student</option></select>
+                <div class="student-picker-row">
+                  <div class="student-picker" id="student-picker">
+                    <button class="picker-trigger" id="student-picker-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="student-picker-menu">
+                      <span class="picker-avatar" id="picker-avatar">?</span>
+                      <span class="picker-current"><strong id="student-picker-value">Choose a student</strong><small id="student-picker-meta">Select from your roster</small></span>
+                      <span class="picker-chevron" aria-hidden="true">⌄</span>
+                    </button>
+                    <div class="picker-menu" id="student-picker-menu" hidden>
+                      <label class="picker-search"><span aria-hidden="true">⌕</span><input id="student-picker-search" type="search" placeholder="Find a student…" autocomplete="off" aria-label="Find a student"></label>
+                      <div class="picker-options" id="student-picker-options" role="listbox" aria-label="Students"><div class="picker-empty">Connect GitHub to load the roster.</div></div>
+                      <div class="picker-menu-footer"><button class="picker-create" id="picker-create-student" type="button"><span>＋</span> Create student</button></div>
+                    </div>
+                  </div>
+                  <button class="qr-action" id="show-student-qr" type="button" disabled title="Show selected student's QR code"><span aria-hidden="true">▦</span><span>Show QR</span></button>
+                </div>
+              </div>
+              <label class="field"><span>Subject <b class="required-mark">*</b></span><input id="subject-input" type="text" maxlength="80" placeholder="e.g. Mathematics" autocomplete="off" required></label>
+              <label class="field"><span>Assessment <b class="required-mark">*</b></span><input id="assessment-input" type="text" maxlength="120" placeholder="e.g. Midterm exam" autocomplete="off" required></label>
+              <div class="field-row">
+                <label class="field"><span>Score <b class="required-mark">*</b></span><input id="score-input" type="number" inputmode="decimal" step="any" min="0" placeholder="e.g. 17.5" required><small>Numbers only · decimals allowed</small></label>
+                <label class="field"><span>Out of</span><input id="max-score-input" type="number" inputmode="decimal" step="any" min="0.00000001" value="100" required><small>Maximum possible score</small></label>
+              </div>
+              <div class="score-preview" id="score-preview">
+                <div class="preview-ring" id="preview-ring" style="--preview-value:0%"><span id="preview-percent">0%</span></div>
+                <div class="preview-copy"><strong>Score preview</strong><span id="preview-caption">Enter a score to see the percentage.</span></div>
+              </div>
+              <label class="field"><span>Assessment date</span><input id="date-input" type="date"></label>
+              <label class="field"><span>Feedback <em>Optional</em></span><textarea id="feedback-input" rows="3" maxlength="500" placeholder="Add a short note for the student..."></textarea></label>
+              <div class="form-error" id="form-error" role="alert" hidden></div>
+              <div class="form-actions"><button class="primary-button save-button" id="save-score" type="submit"><span id="save-label">Add to batch</span><span aria-hidden="true">↗</span></button><button class="subtle-button" id="cancel-edit" type="button" hidden>Cancel edit</button></div>
+              <section class="batch-panel" id="batch-panel" hidden aria-live="polite">
+                <div class="batch-heading"><div><strong>Publishing batch</strong><span id="batch-count">0 scores staged</span></div><button class="text-button" id="clear-batch" type="button">Clear all</button></div>
+                <div class="batch-list" id="batch-list"></div>
+                <button class="primary-button batch-publish" id="publish-batch" type="button" disabled><span id="publish-batch-label">Publish 0 scores</span><span aria-hidden="true">↗</span></button>
+                <p class="commit-note"><span class="commit-check">✓</span> All staged scores are saved in one GitHub commit.</p>
+              </section>
+              <p class="commit-note form-commit-note"><span class="commit-check">✓</span> Add one or more results to the batch, then publish them together.</p>
+            </form>
+          </section>
+
+          <section class="panel records-panel" aria-labelledby="records-title">
+            <div class="panel-heading records-heading"><div><span class="eyebrow">RECENT ACTIVITY</span><h3 id="records-title">Published scores</h3></div><span class="record-total" id="record-total">0 records</span></div>
+            <div class="search-row"><label class="search-box"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7" stroke="currentColor" stroke-width="1.5"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="record-search" type="search" placeholder="Search student or subject..." aria-label="Search published scores"></label><button class="icon-button" id="reload-data" type="button" aria-label="Reload data" title="Reload data"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16.4 8A6.5 6.5 0 0 0 5.1 5.5L3.5 7.2M3.5 7.2V3.8m0 3.4h3.4M3.6 12A6.5 6.5 0 0 0 14.9 14.5l1.6-1.7m0 0v3.4m0-3.4h-3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+            <div class="table-wrap"><table><thead><tr><th>STUDENT</th><th>SUBJECT / ASSESSMENT</th><th>SCORE</th><th>DATE</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody id="records-body"><tr><td colspan="5" class="table-empty">Connect GitHub to load score records.</td></tr></tbody></table></div>
+            <div class="records-footer"><span id="records-footer-label">Updates are committed to scores.csv</span><a href="https://github.com/amiraliparizz-coder/symmetrical-parakeet/commits/main/scores.csv" target="_blank" rel="noopener">View commit history ↗</a></div>
+          </section>
+        </div>
+
+        <section class="roster-strip" id="roster-strip">
+          <div class="roster-icon">♙</div><div class="roster-copy"><strong>Student roster</strong><span id="roster-description">The score form uses student IDs from students.csv.</span></div>
+          <button class="outline-button" id="add-student-open" type="button">+ Add student</button>
+        </section>
+      </section>
+
+      <section class="offline-state" id="offline-state">
+        <div class="offline-mark">✦</div><h2>Your admin space is ready.</h2><p>Connect the repository once to load your student roster and published scores. Your settings stay on this Windows browser.</p><button class="primary-button" id="offline-configure" type="button">Set up GitHub connection <span>→</span></button>
+        <div class="offline-points"><span>One-time token setup</span><span>Direct commits to GitHub</span><span>No GitHub Desktop</span></div>
+      </section>
+    </main>
+
+    <footer class="admin-footer"><span>Scoreboard Admin</span><span>Local tool · GitHub stores the published data</span></footer>
+  </div>
+
+  <div class="modal-backdrop" id="settings-modal" hidden>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="modal-heading"><div><span class="eyebrow">CONNECTION</span><h2 id="settings-title">GitHub settings</h2><p>Connect this local admin tool to your repository.</p></div><button class="modal-close" id="close-settings" type="button" aria-label="Close settings">×</button></div>
+      <div class="modal-body settings-body">
+        <div class="settings-tabs" role="tablist" aria-label="Settings sections">
+          <button class="settings-tab is-active" id="settings-tab-connection" type="button" role="tab" aria-selected="true" aria-controls="settings-panel-connection" data-settings-tab="connection"><span>⌁</span> Connection</button>
+          <button class="settings-tab" id="settings-tab-appearance" type="button" role="tab" aria-selected="false" aria-controls="settings-panel-appearance" data-settings-tab="appearance"><span>◐</span> Appearance</button>
+          <button class="settings-tab" id="settings-tab-developer" type="button" role="tab" aria-selected="false" aria-controls="settings-panel-developer" data-settings-tab="developer"><span>⌘</span> Developer</button>
+          <button class="settings-tab" id="settings-tab-language" type="button" role="tab" aria-selected="false" aria-controls="settings-panel-language" data-settings-tab="language"><span>文</span> Language</button>
+        </div>
+        <section class="settings-panel" id="settings-panel-connection" role="tabpanel" aria-labelledby="settings-tab-connection" data-settings-panel="connection">
+          <div class="settings-notice"><strong>One-time setup</strong><span>Your token is saved in this browser's local storage. It is sent only to api.github.com when the panel reads or commits repository files.</span></div>
+          <label class="field"><span>Repository owner</span><input id="repo-owner" type="text" value="amiraliparizz-coder" autocomplete="off"></label>
+          <label class="field"><span>Repository name</span><input id="repo-name" type="text" value="symmetrical-parakeet" autocomplete="off"></label>
+          <label class="field"><span>Branch</span><input id="repo-branch" type="text" value="main" autocomplete="off"></label>
+          <label class="field token-field"><span>Fine-grained personal access token</span><input id="github-token" type="password" placeholder="Paste your GitHub token here" autocomplete="new-password"><small id="token-status">No token saved on this browser yet.</small></label>
+          <div class="token-help"><strong>Token permissions</strong><p>Create a <b>fine-grained token</b> for <b>only this repository</b>. Grant <b>Contents: Read and write</b>. GitHub's default Metadata read permission is sufficient for repository identification.</p><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a fine-grained token ↗</a></div>
+          <div class="settings-error" id="settings-error" role="alert" hidden></div>
+          <div class="modal-actions"><button class="danger-quiet" id="clear-token" type="button">Clear saved token</button><button class="primary-button" id="save-settings" type="button">Save & connect <span>→</span></button></div>
+          <p class="settings-footnote">Keep this HTML file and its JavaScript on your own computer. Do not publish the admin files or share this browser profile. The token is not encrypted by this tool.</p>
+        </section>
+        <section class="settings-panel" id="settings-panel-appearance" role="tabpanel" aria-labelledby="settings-tab-appearance" data-settings-panel="appearance" hidden>
+          <div class="settings-section-intro"><span class="eyebrow">PERSONALISE YOUR WORKSPACE</span><h3>Appearance</h3><p>Choose how the admin workspace looks on this device.</p></div>
+          <div class="theme-options" role="group" aria-label="Color theme">
+            <button class="theme-option" type="button" data-theme-choice="light" aria-pressed="false"><span class="theme-preview theme-preview-light"><i></i><i></i><i></i></span><strong>Light</strong><small>Bright and clean</small></button>
+            <button class="theme-option" type="button" data-theme-choice="dark" aria-pressed="false"><span class="theme-preview theme-preview-dark"><i></i><i></i><i></i></span><strong>Dark</strong><small>Low-light comfort</small></button>
+            <button class="theme-option" type="button" data-theme-choice="system" aria-pressed="false"><span class="theme-preview theme-preview-system"><i></i><i></i><i></i></span><strong>System</strong><small>Follow Windows</small></button>
+          </div>
+          <div class="settings-note"><strong>Saved on this browser</strong><span>Your appearance preference is local to this admin device and does not change the public student website.</span></div>
+          <div class="modal-actions modal-actions-end"><button class="primary-button" id="save-appearance" type="button">Save appearance <span>→</span></button></div>
+        </section>
+        <section class="settings-panel" id="settings-panel-language" role="tabpanel" aria-labelledby="settings-tab-language" data-settings-panel="language" hidden>
+          <div class="settings-section-intro"><span class="eyebrow">WORKSPACE LANGUAGE</span><h3>Language</h3><p>Choose the language for this administrator workspace. Persian automatically enables a right-to-left layout.</p></div>
+          <div class="language-options" role="group" aria-label="Workspace language">
+            <button class="language-option" type="button" data-language-choice="en" aria-pressed="true"><span class="language-symbol">EN</span><span><strong>English</strong><small>Left-to-right layout</small></span></button>
+            <button class="language-option" type="button" data-language-choice="fa" aria-pressed="false"><span class="language-symbol">فا</span><span><strong>فارسی</strong><small>چیدمان راست‌به‌چپ</small></span></button>
+          </div>
+          <div class="settings-note"><strong>Saved on this browser</strong><span>Language preference is stored locally and does not change the public student score page.</span></div>
+          <div class="modal-actions modal-actions-end"><button class="primary-button" id="save-language" type="button">Save language <span>→</span></button></div>
+        </section>
+        <section class="settings-panel" id="settings-panel-developer" role="tabpanel" aria-labelledby="settings-tab-developer" data-settings-panel="developer" hidden>
+          <div class="settings-section-intro"><span class="eyebrow">ADVANCED CONFIGURATION</span><h3>Developer settings</h3><p>These values control the published student destination and local admin behaviour.</p></div>
+          <label class="field"><span>Student score site URL</span><input id="student-site-url" type="url" placeholder="https://yourname.github.io/repository/"><small>Use the published site base URL and include the trailing slash. QR codes open student.html?student=STUDENT_ID.</small></label>
+          <div class="settings-note"><strong>QR destination</strong><span id="qr-destination-preview">https://amiraliparizz-coder.github.io/symmetrical-parakeet/student.html</span></div>
+          <div class="settings-error" id="developer-error" role="alert" hidden></div>
+          <div class="modal-actions modal-actions-end"><button class="primary-button" id="save-developer" type="button">Save developer settings <span>→</span></button></div>
+          <p class="settings-footnote">The public student page reads the <b>student</b> URL parameter. Keep that route unchanged when printing QR cards.</p>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="student-modal" hidden>
+    <section class="modal-card small-modal" role="dialog" aria-modal="true" aria-labelledby="student-modal-title">
+      <div class="modal-heading"><div><span class="eyebrow">ROSTER</span><h2 id="student-modal-title">Add a student</h2><p>Add a student record to students.csv.</p></div><button class="modal-close" id="close-student-modal" type="button" aria-label="Close">×</button></div>
+      <div class="modal-body">
+        <form id="student-form" novalidate>
+          <label class="field"><span>Student ID</span><input id="new-student-id" type="text" maxlength="40" placeholder="e.g. STU_1042" autocomplete="off" required><small>4–40 letters, numbers, underscores or hyphens.</small></label>
+          <label class="field"><span>Display name</span><input id="new-student-name" type="text" maxlength="80" placeholder="Name shown on the score page" autocomplete="off" required></label>
+          <div class="settings-error" id="student-error" role="alert" hidden></div>
+          <div class="modal-actions"><span></span><button class="primary-button" id="save-student" type="submit">Add student <span>→</span></button></div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="qr-modal" hidden>
+    <section class="modal-card qr-modal-card" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
+      <div class="modal-heading"><div><span class="eyebrow">STUDENT ACCESS</span><h2 id="qr-modal-title">Student QR code</h2><p id="qr-student-label">Scan to open this student's published results.</p></div><button class="modal-close" id="close-qr-modal" type="button" aria-label="Close QR code">×</button></div>
+      <div class="qr-modal-body">
+        <div class="qr-artboard"><div id="qr-canvas" class="qr-canvas-host" role="img" aria-label="Student results QR code"></div></div>
+        <div class="qr-destination"><span>STUDENT RESULTS LINK</span><code id="qr-url-text"></code></div>
+        <div class="qr-modal-actions"><button class="outline-button" id="copy-qr-link" type="button">Copy link</button><button class="primary-button" id="download-qr" type="button">Download PNG <span>↓</span></button></div>
+        <p class="qr-footnote">This QR code opens the student's personal score page, not the admin panel.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
