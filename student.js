@@ -2,6 +2,16 @@
   "use strict";
 
   const REFRESH_INTERVAL_MS = 30_000;
+
+  // Read the CSV dataset directly from the repository, not from the GitHub Pages
+  // deployment. CSV-only commits therefore become visible on the next poll without
+  // waiting for a Pages rebuild.
+  const DATA_REPOSITORY = Object.freeze({
+    owner: "amiraliparizz-coder",
+    repo: "symmetrical-parakeet",
+    branch: "main"
+  });
+
   const studentId = (new URLSearchParams(window.location.search).get("student") || "").trim();
 
   const ui = {
@@ -126,15 +136,32 @@
   }
 
   async function fetchCsv(filename, requiredColumns) {
-    const url = new URL(`./${filename}`, window.location.href);
-    url.searchParams.set("refresh", String(Date.now()));
-    const response = await fetch(url, {
+    // This data URL is independent from the Pages URL. Pages may take time to
+    // redeploy after a commit; raw.githubusercontent.com serves the current branch
+    // file directly while this page stays open and polls every 30 seconds.
+    const safeFilename = filename.split("/").map(encodeURIComponent).join("/");
+    const url = new URL(
+      `https://raw.githubusercontent.com/${encodeURIComponent(DATA_REPOSITORY.owner)}/${encodeURIComponent(DATA_REPOSITORY.repo)}/${encodeURIComponent(DATA_REPOSITORY.branch)}/${safeFilename}`
+    );
+    url.searchParams.set("_score_refresh", String(Date.now()));
+
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      mode: "cors",
       cache: "no-store",
-      headers: { Accept: "text/csv" }
+      headers: {
+        Accept: "text/plain",
+        "Cache-Control": "no-cache"
+      }
     });
+
     if (!response.ok) {
-      throw new Error(`${filename} could not be loaded (HTTP ${response.status}).`);
+      throw new Error(
+        `${filename} could not be loaded from the live GitHub dataset (HTTP ${response.status}). ` +
+        `Check that ${filename} exists in ${DATA_REPOSITORY.owner}/${DATA_REPOSITORY.repo} on ${DATA_REPOSITORY.branch}.`
+      );
     }
+
     return parseCsv(await response.text(), requiredColumns);
   }
 
@@ -251,7 +278,7 @@
         ui.resultsSection.hidden = true;
         ui.pageMeta.hidden = true;
         ui.resultsList.replaceChildren();
-        showState("Student profile not found", "This QR code does not match a current student entry. Please contact your school for the correct QR code.", "error");
+        showState("Student profile not found", "This student ID is not in the live students.csv file on the school's GitHub repository yet. Ask the administrator to confirm that the student was saved to the main branch, then try Refresh again.", "error");
         setConnection("error", "Unknown student");
         hasLoadedData = true;
         clearNotice();

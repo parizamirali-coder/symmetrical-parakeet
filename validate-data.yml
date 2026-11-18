@@ -1,0 +1,25 @@
+name: Validate live score dataset
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "scores.csv"
+      - "students.csv"
+      - "validate_scores.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Check student roster and score records
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate CSV dataset
+        run: python3 validate_scores.py scores.csv students.csv
