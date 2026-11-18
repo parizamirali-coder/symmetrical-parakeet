@@ -7,7 +7,7 @@
   // deployment. CSV-only commits therefore become visible on the next poll without
   // waiting for a Pages rebuild.
   const DATA_REPOSITORY = Object.freeze({
-    owner: "amiraliparizz-coder",
+    owner: "parizamirali-coder",
     repo: "symmetrical-parakeet",
     branch: "main"
   });
