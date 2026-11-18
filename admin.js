@@ -2,7 +2,7 @@
   "use strict";
 
   const DEFAULT_SETTINGS = {
-    owner: "amiraliparizz-coder",
+    owner: "parizamirali-coder",
     repo: "symmetrical-parakeet",
     branch: "main",
     theme: "system",
@@ -90,12 +90,6 @@
     pickerAvatar: $("picker-avatar"),
     pickerCreateStudent: $("picker-create-student"),
     showStudentQr: $("show-student-qr"),
-    batchPanel: $("batch-panel"),
-    batchCount: $("batch-count"),
-    batchList: $("batch-list"),
-    publishBatch: $("publish-batch"),
-    publishBatchLabel: $("publish-batch-label"),
-    clearBatch: $("clear-batch"),
     settingsTabs: Array.from(document.querySelectorAll("[data-settings-tab]")),
     settingsPanels: Array.from(document.querySelectorAll("[data-settings-panel]")),
     saveAppearance: $("save-appearance"),
@@ -150,6 +144,16 @@
     "Publishing batch…": "در حال انتشار گروهی…",
     "Adding student…": "در حال افزودن دانش‌آموز…",
     "Deleting…": "در حال حذف…",
+    "Saving score…": "در حال ذخیره نمره…",
+    "Saving changes…": "در حال ذخیره تغییرات…",
+    "Save score to GitHub": "ذخیره نمره در گیت‌هاب",
+    "Save changes to GitHub": "ذخیره تغییرات در گیت‌هاب",
+    "Changes saved to GitHub": "تغییرات در گیت‌هاب ذخیره شد",
+    "Score saved to GitHub": "نمره در گیت‌هاب ذخیره شد",
+    "Could not save score": "ذخیره نمره انجام نشد",
+    "Saving commits this score directly to GitHub. The student's page updates on its next refresh.": "با زدن ذخیره، نمره مستقیماً در گیت‌هاب ثبت می‌شود و صفحه دانش‌آموز در به‌روزرسانی بعدی آن را نشان می‌دهد.",
+    "The new result is committed in scores.csv. The student's page will pick it up on its next refresh.": "نتیجه جدید در scores.csv ثبت شد و در به‌روزرسانی بعدی در صفحه دانش‌آموز نمایش داده می‌شود.",
+    "The updated result is committed in scores.csv. The student's page will pick it up on its next refresh.": "نتیجه ویرایش‌شده در scores.csv ثبت شد و در به‌روزرسانی بعدی در صفحه دانش‌آموز نمایش داده می‌شود.",
     "Publish 0 scores": "انتشار ۰ نمره",
     "Select from your roster": "از فهرست دانش‌آموزان انتخاب کنید",
     "Find a student…": "جست‌وجوی دانش‌آموز…",
@@ -539,7 +543,6 @@
     connected: false,
     busy: false,
     editingIndex: null,
-    pendingScores: [],
     selectedSettingsTab: "connection",
     activeQrUrl: "",
     storageAvailable: true
@@ -550,15 +553,25 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const saved = JSON.parse(raw);
+      const savedOwner = String(saved.owner || "");
+      const savedRepo = String(saved.repo || DEFAULT_SETTINGS.repo);
+      const savedBranch = String(saved.branch || DEFAULT_SETTINGS.branch);
+      // Older copies of this project saved the website-hosting account as the
+      // data repository owner. Migrate that exact default combination once.
+      const migrateLegacyRepositoryOwner =
+        savedOwner.toLowerCase() === "amiraliparizz-coder" &&
+        savedRepo.toLowerCase() === DEFAULT_SETTINGS.repo.toLowerCase() &&
+        savedBranch.toLowerCase() === DEFAULT_SETTINGS.branch.toLowerCase();
       state.settings = {
-        owner: String(saved.owner || DEFAULT_SETTINGS.owner),
-        repo: String(saved.repo || DEFAULT_SETTINGS.repo),
-        branch: String(saved.branch || DEFAULT_SETTINGS.branch),
+        owner: migrateLegacyRepositoryOwner ? DEFAULT_SETTINGS.owner : String(savedOwner || DEFAULT_SETTINGS.owner),
+        repo: savedRepo,
+        branch: savedBranch,
         theme: ["light", "dark", "system"].includes(saved.theme) ? saved.theme : DEFAULT_SETTINGS.theme,
         language: ["en", "fa"].includes(saved.language) ? saved.language : DEFAULT_SETTINGS.language,
         studentSiteUrl: String(saved.studentSiteUrl || DEFAULT_SETTINGS.studentSiteUrl)
       };
       state.token = typeof saved.token === "string" ? saved.token : "";
+      if (migrateLegacyRepositoryOwner) saveSettingsLocally();
     } catch (error) {
       state.storageAvailable = false;
       console.warn("Local settings could not be read.", error);
@@ -649,9 +662,7 @@
     ui.reloadData.disabled = busy;
     ui.saveSettings.disabled = busy;
     ui.saveStudent.disabled = busy;
-    ui.publishBatch.disabled = busy || state.pendingScores.length === 0;
-    ui.clearBatch.disabled = busy || state.pendingScores.length === 0;
-    ui.saveLabel.textContent = busy && label ? label : (state.editingIndex === null ? "Publish score" : "Save changes");
+    ui.saveLabel.textContent = busy && label ? label : (state.editingIndex === null ? "Save score to GitHub" : "Save changes to GitHub");
   }
 
   function currentRepoPath(path) {
@@ -862,10 +873,6 @@
     const scores = parseCsv(scoreFile.text, SCORE_COLUMNS, "scores.csv");
     validateRoster(students);
     validateScoreRows(scores, students);
-    if (state.pendingScores.length) {
-      state.pendingScores = [];
-      renderPendingScores();
-    }
     state.students = students;
     state.scores = scores;
     state.studentsSha = studentFile.sha;
@@ -886,37 +893,6 @@
     renderAnalytics();
     renderRecords();
     ui.rosterDescription.textContent = `${state.students.length} student${state.students.length === 1 ? "" : "s"} in students.csv · Changes are saved directly to GitHub.`;
-    renderPendingScores();
-  }
-
-  function renderPendingScores() {
-    const count = state.pendingScores.length;
-    ui.batchPanel.hidden = count === 0;
-    ui.batchCount.textContent = `${count} score${count === 1 ? "" : "s"} staged`;
-    ui.publishBatchLabel.textContent = `Publish ${count} score${count === 1 ? "" : "s"}`;
-    ui.publishBatch.disabled = state.busy || count === 0;
-    ui.clearBatch.disabled = state.busy || count === 0;
-    ui.batchList.replaceChildren();
-    state.pendingScores.forEach((item, index) => {
-      const student = state.students.find((record) => record.student_id === item.record.student_id);
-      const row = document.createElement("div");
-      row.className = "batch-item";
-      const copy = document.createElement("div");
-      copy.className = "batch-item-copy";
-      const title = document.createElement("strong");
-      title.textContent = `${student ? student.display_name : item.record.student_id} · ${item.record.subject}`;
-      const detail = document.createElement("small");
-      detail.textContent = `${item.record.assessment} · ${formatNumber(item.record.score)} / ${formatNumber(item.record.max_score)}`;
-      copy.append(title, detail);
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "batch-remove";
-      remove.dataset.pendingIndex = String(index);
-      remove.setAttribute("aria-label", `Remove ${item.record.assessment} from publishing batch`);
-      remove.textContent = "×";
-      row.append(copy, remove);
-      ui.batchList.append(row);
-    });
   }
 
   function renderStudents() {
@@ -1090,7 +1066,7 @@
         <td><span class="subject-cell"><strong>${escapeHtml(record.subject)}</strong><small>${escapeHtml(record.assessment)}</small></span></td>
         <td class="score-cell">${formatNumber(record.score)} / ${formatNumber(record.max_score)}<small>${formatNumber(percent)}%</small></td>
         <td class="date-cell">${escapeHtml(formatDate(record.date))}</td>
-        <td><span class="row-actions"><button class="row-action" type="button" data-action="edit" data-index="${index}">Edit</button><button class="row-action delete" type="button" data-action="delete" data-index="${index}">Delete</button></span></td>
+        <td><span class="row-actions"><button class="row-action" type="button" data-action="edit" data-index="${index}" aria-label="Edit ${escapeHtml(record.assessment)} for ${escapeHtml(name)}">Edit</button><button class="row-action delete" type="button" data-action="delete" data-index="${index}" aria-label="Delete ${escapeHtml(record.assessment)} for ${escapeHtml(name)}">Delete</button></span></td>
       </tr>`;
     }).join("");
   }
@@ -1164,17 +1140,13 @@
     const candidateKey = scoreKey(candidate);
     const duplicateIndex = records.findIndex((record, index) => index !== skipIndex && scoreKey(record) === candidateKey);
     if (duplicateIndex >= 0) throw new Error("This student already has a score for the same subject, assessment and date.");
-    const queuedDuplicate = state.pendingScores.find((item) => !(skipIndex !== null && item.editIndex === skipIndex) && scoreKey(item.record) === candidateKey);
-    if (queuedDuplicate) throw new Error("The same student, subject, assessment and date are already in this publishing batch.");
   }
 
   async function commitCsvFile(filename, text, sha, commitMessage) {
     const remote = await getContents(filename);
     if (remote.sha !== sha) {
-      state.pendingScores = [];
-      renderPendingScores();
       await loadData();
-      throw new Error(`${filename} changed in GitHub since your last sync. The latest data has been loaded and the pending batch was cleared. Review the latest records and stage the changes again.`);
+      throw new Error(`${filename} changed in GitHub since your last sync. The latest data has been loaded. Review the current records and try saving again.`);
     }
     const result = await putContents(filename, text, sha, commitMessage);
     return result.content && result.content.sha ? result.content.sha : "";
@@ -1184,50 +1156,45 @@
     event.preventDefault();
     if (state.busy || !state.connected) return;
     hideError(ui.formError);
+    const wasEditing = state.editingIndex !== null;
+    const editingIndex = state.editingIndex;
     try {
       const candidate = scoreFromForm();
-      checkDuplicate(candidate, state.scores, state.editingIndex);
-      const existingPendingIndex = state.pendingScores.findIndex((item) => item.editIndex === state.editingIndex && state.editingIndex !== null);
-      const pendingItem = { record: candidate, editIndex: state.editingIndex };
-      if (existingPendingIndex >= 0) state.pendingScores[existingPendingIndex] = pendingItem;
-      else state.pendingScores.push(pendingItem);
-      const wasEditing = state.editingIndex !== null;
-      resetScoreForm();
-      renderPendingScores();
-      showToast(wasEditing ? "Change staged" : "Score added to batch", `${state.pendingScores.length} score${state.pendingScores.length === 1 ? "" : "s"} ready to publish together.`);
-    } catch (error) {
-      showFormError(error.message || "The score could not be staged.");
-    }
-  }
+      checkDuplicate(candidate, state.scores, editingIndex);
 
-  async function publishPendingScores() {
-    if (state.busy || !state.connected || !state.pendingScores.length) return;
-    try {
       const next = state.scores.map((record) => ({ ...record }));
-      state.pendingScores.forEach((item) => {
-        if (item.editIndex === null) next.push(item.record);
-        else if (item.editIndex >= 0 && item.editIndex < next.length) next[item.editIndex] = item.record;
-        else throw new Error("A staged edit no longer matches the current score list. Clear the batch and review the latest records.");
-      });
+      if (wasEditing) {
+        if (editingIndex < 0 || editingIndex >= next.length) {
+          throw new Error("This score is no longer in the current list. Refresh the data and try again.");
+        }
+        next[editingIndex] = candidate;
+      } else {
+        next.push(candidate);
+      }
       validateScoreRows(next, state.students);
-      setBusy(true, "Publishing batch…");
-      const count = state.pendingScores.length;
-      const newSha = await commitCsvFile("scores.csv", serialiseCsv(next, SCORE_COLUMNS), state.scoresSha, `Publish ${count} student score${count === 1 ? "" : "s"}`);
+
+      setBusy(true, wasEditing ? "Saving changes…" : "Saving score…");
+      const newSha = await commitCsvFile(
+        "scores.csv",
+        serialiseCsv(next, SCORE_COLUMNS),
+        state.scoresSha,
+        wasEditing ? "Update student assessment score" : "Add student assessment score"
+      );
+
       state.scores = next;
       state.scoresSha = newSha;
-      state.pendingScores = [];
       resetScoreForm();
       renderAll();
-      ui.updatedLabel.textContent = `Committed ${new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" }).format(new Date())}`;
-      showToast("Scores published", `${count} score${count === 1 ? "" : "s"} committed together. Students will see the new data on their next background refresh.`);
+      ui.updatedLabel.textContent = `Saved ${new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" }).format(new Date())}`;
+      showToast(
+        wasEditing ? "Changes saved to GitHub" : "Score saved to GitHub",
+        `${wasEditing ? "The updated result" : "The new result"} is committed in scores.csv. The student's page will pick it up on its next refresh.`
+      );
     } catch (error) {
-      showToast("Could not publish batch", error.message || "GitHub returned an error.", "error");
-      if (error.status === 409) {
-        try { await loadData(); } catch (_) { /* Keep the original error visible. */ }
-      }
+      showFormError(error.message || "The score could not be saved to GitHub.");
+      showToast("Could not save score", error.message || "GitHub returned an error.", "error");
     } finally {
       setBusy(false);
-      renderPendingScores();
     }
   }
 
@@ -1238,7 +1205,7 @@
     ui.dateInput.value = new Date().toISOString().slice(0, 10);
     ui.maxScoreInput.value = "100";
     ui.formTitle.textContent = "Add an assessment score";
-    ui.saveLabel.textContent = "Add to batch";
+    ui.saveLabel.textContent = "Save score to GitHub";
     ui.cancelEdit.hidden = true;
     hideError(ui.formError);
     updateScorePreview();
@@ -1256,7 +1223,7 @@
     ui.dateInput.value = record.date;
     ui.feedbackInput.value = record.feedback;
     ui.formTitle.textContent = "Edit assessment score";
-    ui.saveLabel.textContent = "Stage changes";
+    ui.saveLabel.textContent = "Save changes to GitHub";
     ui.cancelEdit.hidden = false;
     hideError(ui.formError);
     updateScorePreview();
@@ -1264,10 +1231,6 @@
   }
 
   async function deleteScore(index) {
-    if (state.pendingScores.length) {
-      showToast("Finish the publishing batch first", "Publish or clear staged scores before deleting an existing record.", "error");
-      return;
-    }
     const record = state.scores[index];
     if (!record) return;
     const name = studentMap().get(record.student_id) || record.student_id;
@@ -1494,13 +1457,11 @@
     state.connected = false;
     state.students = [];
     state.scores = [];
-    state.pendingScores = [];
     state.studentsSha = "";
     state.scoresSha = "";
     saveSettingsLocally();
     ui.dashboard.hidden = true;
     ui.offlineState.hidden = false;
-    renderPendingScores();
     ui.connectCard.hidden = false;
     setConnection("offline", "Not connected");
     ui.tokenStatus.textContent = "No token saved on this browser yet.";
@@ -1560,7 +1521,6 @@
     ui.recordSearch.addEventListener("input", renderRecords);
     ui.reloadData.addEventListener("click", async () => {
       if (state.busy) return;
-      if (state.pendingScores.length && !window.confirm(translatedString("Refreshing reloads the latest GitHub data and clears your unpublished batch. Continue?"))) return;
       try {
         setBusy(true, "Refreshing…");
         await loadData();
@@ -1596,20 +1556,7 @@
     ui.qrModal.addEventListener("click", (event) => { if (event.target === ui.qrModal) closeQrModal(); });
     ui.copyQrLink.addEventListener("click", copyQrLink);
     ui.downloadQr.addEventListener("click", downloadQr);
-    ui.publishBatch.addEventListener("click", publishPendingScores);
-    ui.clearBatch.addEventListener("click", () => {
-      if (!state.pendingScores.length) return;
-      if (!window.confirm(translatedString("Clear all staged scores? Nothing in the batch has been published yet."))) return;
-      state.pendingScores = [];
-      renderPendingScores();
-      showToast("Batch cleared", "All unpublished staged scores have been removed.");
-    });
-    ui.batchList.addEventListener("click", (event) => {
-      const button = event.target.closest("button[data-pending-index]");
-      if (!button) return;
-      state.pendingScores.splice(Number(button.dataset.pendingIndex), 1);
-      renderPendingScores();
-    });
+
     ui.settingsTabs.forEach((tab) => tab.addEventListener("click", () => setSettingsTab(tab.dataset.settingsTab)));
     document.querySelectorAll("[data-theme-choice]").forEach((button) => button.addEventListener("click", () => {
       state.settings.theme = button.dataset.themeChoice;
@@ -1656,7 +1603,6 @@
     }
     ui.dateInput.value = new Date().toISOString().slice(0, 10);
     updateScorePreview();
-    renderPendingScores();
     updateQrDestinationPreview();
 
     if (!state.storageAvailable) {

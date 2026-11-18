@@ -37,7 +37,7 @@
           <p>Manage student assessments and publish updates straight to GitHub. No desktop Git client, no command line.</p>
         </div>
         <div class="intro-side">
-          <div class="repo-chip"><span class="repo-icon">⌘</span><span><small>CONNECTED REPOSITORY</small><strong id="repo-label">amiraliparizz-coder / symmetrical-parakeet</strong></span></div>
+          <div class="repo-chip"><span class="repo-icon">⌘</span><span><small>CONNECTED REPOSITORY</small><strong id="repo-label">parizamirali-coder / symmetrical-parakeet</strong></span></div>
           <div class="intro-hint"><span class="hint-spark">✦</span> Changes are committed automatically when you save.</div>
         </div>
       </section>
@@ -113,22 +113,16 @@
               <label class="field"><span>Assessment date</span><input id="date-input" type="date"></label>
               <label class="field"><span>Feedback <em>Optional</em></span><textarea id="feedback-input" rows="3" maxlength="500" placeholder="Add a short note for the student..."></textarea></label>
               <div class="form-error" id="form-error" role="alert" hidden></div>
-              <div class="form-actions"><button class="primary-button save-button" id="save-score" type="submit"><span id="save-label">Add to batch</span><span aria-hidden="true">↗</span></button><button class="subtle-button" id="cancel-edit" type="button" hidden>Cancel edit</button></div>
-              <section class="batch-panel" id="batch-panel" hidden aria-live="polite">
-                <div class="batch-heading"><div><strong>Publishing batch</strong><span id="batch-count">0 scores staged</span></div><button class="text-button" id="clear-batch" type="button">Clear all</button></div>
-                <div class="batch-list" id="batch-list"></div>
-                <button class="primary-button batch-publish" id="publish-batch" type="button" disabled><span id="publish-batch-label">Publish 0 scores</span><span aria-hidden="true">↗</span></button>
-                <p class="commit-note"><span class="commit-check">✓</span> All staged scores are saved in one GitHub commit.</p>
-              </section>
-              <p class="commit-note form-commit-note"><span class="commit-check">✓</span> Add one or more results to the batch, then publish them together.</p>
+              <div class="form-actions"><button class="primary-button save-button" id="save-score" type="submit"><span id="save-label">Save score to GitHub</span><span aria-hidden="true">↗</span></button><button class="subtle-button" id="cancel-edit" type="button" hidden>Cancel edit</button></div>
+              <p class="commit-note form-commit-note"><span class="commit-check">✓</span> Saving commits this score directly to GitHub. The student's page updates on its next refresh.</p>
             </form>
           </section>
 
           <section class="panel records-panel" aria-labelledby="records-title">
             <div class="panel-heading records-heading"><div><span class="eyebrow">RECENT ACTIVITY</span><h3 id="records-title">Published scores</h3></div><span class="record-total" id="record-total">0 records</span></div>
             <div class="search-row"><label class="search-box"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7" stroke="currentColor" stroke-width="1.5"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="record-search" type="search" placeholder="Search student or subject..." aria-label="Search published scores"></label><button class="icon-button" id="reload-data" type="button" aria-label="Reload data" title="Reload data"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16.4 8A6.5 6.5 0 0 0 5.1 5.5L3.5 7.2M3.5 7.2V3.8m0 3.4h3.4M3.6 12A6.5 6.5 0 0 0 14.9 14.5l1.6-1.7m0 0v3.4m0-3.4h-3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-            <div class="table-wrap"><table><thead><tr><th>STUDENT</th><th>SUBJECT / ASSESSMENT</th><th>SCORE</th><th>DATE</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody id="records-body"><tr><td colspan="5" class="table-empty">Connect GitHub to load score records.</td></tr></tbody></table></div>
-            <div class="records-footer"><span id="records-footer-label">Updates are committed to scores.csv</span><a href="https://github.com/amiraliparizz-coder/symmetrical-parakeet/commits/main/scores.csv" target="_blank" rel="noopener">View commit history ↗</a></div>
+            <div class="table-wrap"><table><thead><tr><th>STUDENT</th><th>SUBJECT / ASSESSMENT</th><th>SCORE</th><th>DATE</th><th>ACTIONS</th></tr></thead><tbody id="records-body"><tr><td colspan="5" class="table-empty">Connect GitHub to load score records.</td></tr></tbody></table></div>
+            <div class="records-footer"><span id="records-footer-label">Updates are committed to scores.csv</span><a href="https://github.com/parizamirali-coder/symmetrical-parakeet/commits/main/scores.csv" target="_blank" rel="noopener">View commit history ↗</a></div>
           </section>
         </div>
 
@@ -159,7 +153,7 @@
         </div>
         <section class="settings-panel" id="settings-panel-connection" role="tabpanel" aria-labelledby="settings-tab-connection" data-settings-panel="connection">
           <div class="settings-notice"><strong>One-time setup</strong><span>Your token is saved in this browser's local storage. It is sent only to api.github.com when the panel reads or commits repository files.</span></div>
-          <label class="field"><span>Repository owner</span><input id="repo-owner" type="text" value="amiraliparizz-coder" autocomplete="off"></label>
+          <label class="field"><span>Repository owner</span><input id="repo-owner" type="text" value="parizamirali-coder" autocomplete="off"></label>
           <label class="field"><span>Repository name</span><input id="repo-name" type="text" value="symmetrical-parakeet" autocomplete="off"></label>
           <label class="field"><span>Branch</span><input id="repo-branch" type="text" value="main" autocomplete="off"></label>
           <label class="field token-field"><span>Fine-grained personal access token</span><input id="github-token" type="password" placeholder="Paste your GitHub token here" autocomplete="new-password"><small id="token-status">No token saved on this browser yet.</small></label>

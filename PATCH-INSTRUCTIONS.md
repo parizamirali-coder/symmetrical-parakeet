@@ -1,49 +1,79 @@
-# Live dataset patch
+# Scoreboard live-data and direct-save patch (r2)
 
-This patch makes the student page read `students.csv` and `scores.csv` directly from
-the public GitHub repository's `main` branch, instead of from the GitHub Pages
-deployment. The page loads once and refreshes its data every 30 seconds. CSV-only
-commits no longer trigger a Pages deployment.
+This patch addresses the currently published student page and the local admin panel.
 
-## Files
+## Confirmed live diagnosis (18 Nov 2026)
 
-- `student.js` — replace the existing root-level `student.js`.
-- `admin.js` — replace the existing root-level `admin.js` (updates the publish message).
-- `deploy.yml` — copy to `.github/workflows/deploy.yml`, replacing the current deploy workflow.
-- `validate-data.yml` — add as `.github/workflows/validate-data.yml`.
+The Pages site is `amiraliparizz-coder/symmetrical-parakeet`, but the live `student.js` still reads `students.csv` and `scores.csv` relative to the Pages site. Those CSV files in the Pages repository contain only headers.
 
-## Install
+The actual data is in `parizamirali-coder/symmetrical-parakeet` on branch `main`:
 
-1. Replace the repository's root `student.js` and `admin.js`.
-2. Replace `.github/workflows/deploy.yml` with this patch's `deploy.yml`.
-3. Add this patch's `validate-data.yml` as `.github/workflows/validate-data.yml`.
-4. Commit and push these changes to `main` once. This one-time website-code change deploys the updated student page.
-5. Future student/score edits only update the CSV dataset. The student page fetches the current CSVs directly from GitHub and refreshes every 30 seconds; no Pages redeploy is needed for CSV-only commits.
-
-## Important: verify the student row
-
-I checked the current public `main` branch while preparing this patch. At that time:
-- `students.csv` contained only its header: `student_id,display_name`
-- `scores.csv` contained only its header.
-
-So `rohan` was not present in the live public dataset at the time of inspection. The QR format
-`student.html?student=rohan` is correct; the student row must first be saved to `students.csv`
-on the `main` branch. It should look like:
-
+`students.csv`
 ```csv
 student_id,display_name
-rohan,Rohan
+rohan,Rohan Khoda
 ```
 
-After creating the student in the admin panel, verify that row appears in the repository's
-`students.csv`. If it does not, the admin panel may be connected to a different repository
-or branch, or the GitHub save did not complete.
+`scores.csv`
+```csv
+student_id,subject,assessment,date,score,max_score,feedback
+rohan,4,4,2026-11-18,4,100,
+rohan,gfg,gf,2026-11-18,3,100,
+```
 
-## How it works
+## A. Update the public student website
 
-- Student scans the QR once and opens `student.html`.
-- `student.js` fetches CSV data from `raw.githubusercontent.com`.
-- The open page polls every 30 seconds and updates the score UI without reloading.
-- CSV commits do not redeploy GitHub Pages. Only website-code/style/workflow changes need a Pages deployment.
+In GitHub repository `amiraliparizz-coder/symmetrical-parakeet`, branch `main`, replace these two root-level files:
 
-The CSV dataset remains public. QR codes are not access control.
+- `student.html`
+- `student.js`
+
+Commit and push them. Wait for the GitHub Pages deployment to finish. The updated HTML references a newly versioned JS URL (`student.js?v=20261118-live-csv-fix-r2`) to avoid reusing the old script from browser cache.
+
+The new `student.js` fetches CSV data directly from:
+
+`https://raw.githubusercontent.com/parizamirali-coder/symmetrical-parakeet/main/students.csv`
+
+and
+
+`https://raw.githubusercontent.com/parizamirali-coder/symmetrical-parakeet/main/scores.csv`
+
+It polls every 30 seconds and does not need another Pages deployment when only CSV data changes.
+
+## B. Update the local Windows admin panel
+
+In the local folder where you open the admin panel, replace:
+
+- `admin.html`
+- `admin.js`
+- `admin.css`
+
+Open `admin.html` again in the same browser profile. In Settings, verify:
+
+- Repository owner: `parizamirali-coder`
+- Repository: `symmetrical-parakeet`
+- Branch: `main`
+
+If the browser previously saved `amiraliparizz-coder` as the data owner, this admin.js migrates that exact old setting to `parizamirali-coder`. Verify the settings after opening.
+
+Your GitHub token must have **Contents: Read and write** permission on `parizamirali-coder/symmetrical-parakeet`. A token restricted to the Pages repository cannot save the data repository's CSV files.
+
+## C. Saving and deleting scores
+
+- **Save score to GitHub** commits the new row to `scores.csv` immediately. A success message appears only after GitHub confirms the commit.
+- **Edit** followed by **Save changes to GitHub** commits the edit immediately.
+- **Delete** asks for confirmation, then commits the row removal to `scores.csv` immediately.
+- The previous staged/batch workflow is removed from the active save flow.
+
+After a successful commit, the student's already-open page should show the change on its next background refresh (within about 30 seconds). A newly opened QR page fetches the current data when it loads.
+
+## D. Verify after installation
+
+1. Visit `https://amiraliparizz-coder.github.io/symmetrical-parakeet/student.html?student=rohan`.
+2. It should identify Rohan Khoda and show two results (4/100 and 3/100) based on the data observed when this patch was prepared.
+3. If it still does not, hard-refresh once (`Ctrl+F5`) and check the browser's Network tab for requests to `raw.githubusercontent.com/parizamirali-coder/symmetrical-parakeet/main/students.csv` and `scores.csv`.
+4. If admin Save fails, read the exact GitHub error toast. Common causes are a token without write permission, wrong owner/repository/branch, or a stale file SHA. Refresh the admin data and retry after reviewing the latest rows.
+
+## Important
+
+The admin files must remain local and must not be committed to the public Pages repository. Only `student.html` and `student.js` from this patch go into the Pages repository. This patch does not push changes to GitHub on your behalf; you must commit the files in the two locations above.
