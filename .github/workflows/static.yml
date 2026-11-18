@@ -1,9 +1,13 @@
-name: Validate scores and publish website
+name: Validate and deploy student score website
 
 on:
   push:
     branches:
       - main
+    # CSV-only commits must not rebuild/redeploy GitHub Pages.
+    paths-ignore:
+      - "scores.csv"
+      - "students.csv"
   workflow_dispatch:
 
 permissions:
@@ -14,15 +18,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Validate score data
+  validate-website:
+    name: Validate website files
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Validate the student roster and scores
-        run: python3 validate_scores.py scores.csv students.csv
 
       - name: Check required website files
         run: |
@@ -30,12 +31,10 @@ jobs:
           test -f student.html
           test -f styles.css
           test -f student.js
-          test -f scores.csv
-          test -f students.csv
 
   deploy:
     name: Publish GitHub Pages
-    needs: validate
+    needs: validate-website
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -51,11 +50,11 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Assemble the public website
+      - name: Assemble the website
         run: |
           mkdir -p _site
-          cp index.html student.html styles.css student.js scores.csv students.csv _site/
-
+          cp index.html student.html styles.css student.js _site/
+          # The student page reads scores.csv and students.csv directly from GitHub.
       - name: Upload website artifact
         uses: actions/upload-pages-artifact@v4
         with:
